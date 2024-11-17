@@ -1,0 +1,57 @@
+[project]
+name = "imageclassifier"
+description = "Quickstart for serving Triton models with KServe in Kubernetes"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "click>=8.1.7",
+    "transformers>=4.46.2",
+    "torch>=2.5.1",
+    "torchvision",
+    "timm"
+]
+dynamic = ["version"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["imageclassifier/*"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.1.1",
+    "pytest-cov>=4.1.0",
+    "black>=24.3.0",
+    "diff-cover>=8.0.3",
+    "isort>=5.13.2",
+    "pytest-freezer>=0.4.8",
+]
+
+[tool.pytest.ini_options]
+addopts = ["--import-mode=importlib"]
+log_level = "INFO"
+pythonpaths = ["."]
+
+[tool.coverage.report]
+skip_covered = true
+show_missing = true
+
+[tool.black]
+line-length = 79
+
+[tool.isort]
+profile = "black"
+
+# === Static Type Checkers === #
+
+[tool.mypy]
+# Without this we would have to add an empty __init__.py file for every package.
+namespace_packages = true
+# Without this mypy complains
+# about the same module being imported under different names.
+# Note that this also requires setting `mypy_path`.
+explicit_package_bases = true
+# We usually keep our source code under `src/<namespace>/<library>/...`.
+# This option tells mypy to look under that directory path.
+# If your repo has a different layout you can add the appropriate paths
+# by setting MYPYPATH env variable.
+mypy_path = "imageclassifier"
