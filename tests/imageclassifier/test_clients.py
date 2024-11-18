@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 import pytest
 from click.testing import CliRunner
@@ -142,45 +142,55 @@ def test_create_repository_command_invalid_json(runner, tmp_path: Path):
     assert "Error: Config file must be a valid JSON file" in result.output
 
 
-def test_download_model_command_success(runner, tmp_path: Path):
+def test_download_model_command_success(
+    monkeypatch,
+    runner,
+    tmp_path: Path,
+):
 
     # GIVEN
-    model_name = "vit_base_patch16_384"
+    model_name = "model_name"
     version = 1
     model_repository_path = (
         tmp_path / "model_repository" / model_name / str(version)
     )
-
+    model_file = model_repository_path / "model.pt"
     # WITH
     model_repository_path.mkdir(parents=True)
-    with patch(
-        "imageclassifier.clients.BASE_PATH", str(tmp_path / "model_repository")
-    ):
-        with patch("timm.create_model") as mock_create_model:
-            mock_model = Mock()
-            mock_create_model.return_value = mock_model
-            with patch("torch.save") as mock_torch_save:
-                # Act
-                result = runner.invoke(
-                    pbtxt_generator,
-                    [
-                        "download-model",
-                        model_name,
-                    ],
-                )
 
-                # THEN
-                assert result.exit_code == 0
-                assert (
-                    f"Successfully downloaded model {model_name}"
-                    in result.output
-                )
-                mock_create_model.assert_called_once_with(
-                    model_name, pretrained=True, num_classes=7
-                )
-                mock_torch_save.assert_called_once()
-                # Verify the model file was saved
-                model_file = model_repository_path / "model.pth"
-                mock_torch_save.assert_called_with(
-                    mock_model.state_dict(), model_file
-                )
+    # Mock timm.create_model in the imageclassifier.clients module
+    mock_model = Mock()
+    monkeypatch.setattr(
+        "imageclassifier.clients.timm.create_model",
+        Mock(return_value=mock_model),
+    )
+
+    # Mock torch.jit.trace in the imageclassifier.clients module
+    mock_traced_model = Mock()
+    monkeypatch.setattr(
+        "imageclassifier.clients.torch.jit.trace",
+        Mock(return_value=mock_traced_model),
+    )
+
+    # Mock torch.jit.save in the imageclassifier.clients module
+    mock_torch_save = Mock()
+    monkeypatch.setattr(
+        "imageclassifier.clients.torch.jit.save", mock_torch_save
+    )
+    result = runner.invoke(
+        pbtxt_generator,
+        [
+            "download-model",
+            model_name,
+            "--base-path",
+            str(tmp_path / "model_repository"),
+        ],
+    )
+
+    # THEN
+    assert result.exit_code == 0
+    assert (
+        f"Successfully downloaded model {model_name} to {model_file}"
+        in result.output
+    )
+    mock_torch_save.assert_called_once()

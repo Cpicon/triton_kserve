@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 from typing import Any, Dict
 
@@ -6,15 +7,13 @@ import click
 import timm
 import torch
 
-BASE_PATH = "model_repository"
-
 
 def create_model_repository(
     model_name: str,
     version: int,
     backend: str,
     config: Dict[str, Any],
-    base_path: str = BASE_PATH,
+    base_path: str = "model_repository",
 ) -> None:
     """
     Create the model repository structure and config file for a Triton model.
@@ -71,14 +70,16 @@ def pbtxt_generator():
 @click.argument("backend")
 @click.argument("config_path", type=click.Path(exists=True))
 @click.option(
-    "--base-path", default=BASE_PATH, help="Base path for model repository"
+    "--base-path",
+    default="model_repository",
+    help="Base path for model repository",
 )
 def create_repository(
     model_name: str,
     version: int,
     backend: str,
     config_path: str,
-    base_path: str = BASE_PATH,
+    base_path: str = "model_repository",
 ):
     """
     Create a model repository structure for Triton Inference Server.
@@ -116,9 +117,11 @@ def create_repository(
 @pbtxt_generator.command()
 @click.argument("model_name")
 @click.option(
-    "--base-path", default=BASE_PATH, help="Base path of model repository"
+    "--base-path",
+    default="model_repository",
+    help="Base path of model repository",
 )
-def download_model(model_name: str, base_path: str = BASE_PATH):
+def download_model(model_name: str, base_path: str = "model_repository"):
     """
     Download a pretrained model from timm and save it to the model repository.
     The model will be saved in the highest version number directory found.
@@ -132,7 +135,7 @@ def download_model(model_name: str, base_path: str = BASE_PATH):
         model_base_path = Path(base_path) / model_name
         if not model_base_path.exists():
             click.echo(
-                f"Error: Model repository {model_name} does not exist. Please run create-repository first."
+                f"Error: Model repository {model_base_path} does not exist. Please run create-repository first."
             )
             return
 
@@ -143,8 +146,9 @@ def download_model(model_name: str, base_path: str = BASE_PATH):
             if p.is_dir() and p.name.isdigit()
         ]
         if not versions:
+            path = os.path.join(base_path, model_name)
             click.echo(
-                f"Error: No version directories found in {model_name}. Please run create-repository first."
+                f"Error: No version directories found in {path}. Please run create-repository first."
             )
             return
 
@@ -153,19 +157,16 @@ def download_model(model_name: str, base_path: str = BASE_PATH):
 
         # Check if directory is empty
         if any(model_path.iterdir()):
-            click.echo(
-                f"Error: Version {latest_version} directory is not empty"
-            )
+            path = os.path.join(base_path, model_name, str(latest_version))
+            click.echo(f"Error: Version {path} directory is not empty")
             return
 
         # Create and configure the model
-        model = timm.create_model(
-            "vit_base_patch16_384", pretrained=True, num_classes=7
-        )
-
+        model = timm.create_model(model_name, pretrained=True, num_classes=7)
         # Save model state dict
-        model_file = model_path / "model.pth"
-        torch.save(model.state_dict(), model_file)
+        model_file = model_path / "model.pt"
+        traced_model = torch.jit.trace(model, torch.randn(1, 3, 384, 384))
+        torch.jit.save(traced_model, model_file)
 
         click.echo(
             f"Successfully downloaded model {model_name} to {model_file}"
