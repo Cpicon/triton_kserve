@@ -1,0 +1,12 @@
+{
+    "input": {
+        "name": "input_images:0",
+        "data_type": "TYPE_FP32",
+        "dims": [-1, 3, 384, 384]
+    },
+    "output": {
+        "name": "feature_fusion/Sigmoid:0",
+        "data_type": "TYPE_FP32",
+        "dims": [-1, 7]
+    }
+}

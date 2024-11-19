@@ -1,0 +1,14 @@
+name: triton_server
+services:
+  triton_server:
+    build:
+      context: ../../  # Go up two levels to reach the root directory
+      dockerfile: deployment/dev/triton_server/Dockerfile
+      args:
+        MODEL_NAME: vit_base_patch16_384
+        VERSION: 1
+        BACKEND: pytorch
+    image: triton_server_image
+    container_name: triton_server_container
+    volumes:
+      - ./triton_server/config.json:/app/config.json
