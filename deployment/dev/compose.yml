@@ -12,3 +12,7 @@ services:
     container_name: triton_server_container
     volumes:
       - ./triton_server/config.json:/app/config.json
+    ports:
+        - "8000:8000"
+        - "8001:8001"
+        - "8002:8002"
