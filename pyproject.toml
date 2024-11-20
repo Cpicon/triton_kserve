@@ -2,13 +2,15 @@
 name = "imageclassifier"
 description = "Quickstart for serving Triton models with KServe in Kubernetes"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 dependencies = [
     "click>=8.1.7",
     "transformers>=4.46.2",
     "torch>=2.5.1",
     "torchvision",
-    "timm"
+    "timm",
+    "tritonclient[http]>=2.51.0",
+    "pillow"
 ]
 dynamic = ["version"]
 

@@ -11,7 +11,8 @@ services:
     image: triton_server_image
     container_name: triton_server_container
     volumes:
-      - ./triton_server/config.json:/app/config.json
+      - ./triton_server/image_classifier/config.json:/app/image_classifier/config.json
+      - ./triton_server/preprocessor/config.json:/app/preprocessor/config.json
     ports:
         - "8000:8000"
         - "8001:8001"
