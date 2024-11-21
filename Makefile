@@ -37,6 +37,12 @@ clean:
 	@echo "Cleaning up docker containers..."
 	docker compose -f $(DOCKER_COMPOSE_FILE) down --remove-orphans --volumes
 
+# format code
+format:
+	@echo "Formatting code..."
+	black imageclassifier/ tests/
+	isort imageclassifier/ tests/
+
 
 # Display help message
 help:

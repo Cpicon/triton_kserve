@@ -3,9 +3,7 @@ from unittest.mock import Mock
 import numpy as np
 import pytest
 
-from imageclassifier.features.image_preprocessor import (
-    execute_feature_extractor,
-)
+from imageclassifier.features.image_preprocessor import execute_feature_extractor
 
 
 @pytest.fixture

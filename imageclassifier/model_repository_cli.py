@@ -1,5 +1,6 @@
 import json
 import os
+import re
 from pathlib import Path
 from typing import Any, Dict
 
@@ -106,7 +107,10 @@ output [
     ):
         ensemble_config = generate_ensemble_config(config["ensemble_steps"])
         config_content += f"\n{ensemble_config}"
-        config_content.replace(f'backend: "{backend}"', "")
+        # remove 'backend: "value"' lines, it fails if platform is ensemble
+        config_content = re.sub(
+            r'^backend: ".*"$', "", config_content, flags=re.MULTILINE
+        )
 
     # Write config file
     config_path = Path(base_path) / model_name / "config.pbtxt"
