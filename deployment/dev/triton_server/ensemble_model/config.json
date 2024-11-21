@@ -1,0 +1,27 @@
+{
+    "input": {
+      "name": "input_image",
+      "data_type": "TYPE_FP32",
+      "dims": [3, -1, -1]
+    },
+    "output": {
+        "name": "probabilities_output",
+        "data_type": "TYPE_FP32",
+        "dims": [-1, 7]
+    },
+    "ensemble_steps" : [
+        {
+            "model_name": "image_preprocessor",
+            "model_version": -1,
+            "input_map": {"image_preprocessor_input": "input_image"},
+            "output_map": {"image_preprocessor_output": "preprocessed_image"}
+        },
+        {
+            "model_name": "vit_base_patch16_384",
+            "model_version": -1,
+            "input_map": {"features": "preprocessed_image"},
+            "output_map": { "probabilities": "probabilities_output"}
+        }
+    ]
+}
+

@@ -1,10 +1,60 @@
-import click
-import timm
-import torch
 import json
 import os
 from pathlib import Path
 from typing import Any, Dict
+
+import click
+import timm
+import torch
+
+
+def generate_ensemble_config(
+    ensemble_steps: list[dict[str, any]],
+):
+    """
+    Generates a config.pbtxt file for an ensemble model.
+
+    Args:
+        ensemble_steps: List of ensemble step dictionaries with model configuration.
+    """
+    config_lines = []
+
+    # Add ensemble scheduling
+    config_lines.append('platform: "ensemble"')
+    config_lines.append("ensemble_scheduling {")
+    config_lines.append("  step [")
+
+    for idx, step in enumerate(ensemble_steps):
+        config_lines.append("    {")
+        config_lines.append(f'      model_name: "{step["model_name"]}"')
+        config_lines.append(f'      model_version: {step["model_version"]}')
+
+        # Add input maps
+        if "input_map" in step:
+            for key, value in step["input_map"].items():
+                config_lines.append("      input_map {")
+                config_lines.append(f'        key: "{key}"')
+                config_lines.append(f'        value: "{value}"')
+                config_lines.append("      }")
+
+        # Add output maps
+        if "output_map" in step:
+            for key, value in step["output_map"].items():
+                config_lines.append("      output_map {")
+                config_lines.append(f'        key: "{key}"')
+                config_lines.append(f'        value: "{value}"')
+                config_lines.append("      }")
+
+        config_lines.append("    }")
+
+        # Add a comma after each step except the last one
+        if idx < len(ensemble_steps) - 1:
+            config_lines.append(",")
+
+    config_lines.append("  ]")
+    config_lines.append("}")
+
+    return "\n".join(config_lines)
 
 
 def create_model_repository(
@@ -31,7 +81,7 @@ def create_model_repository(
         model_path = Path(base_path) / model_name / str(version)
     model_path.mkdir(parents=True, exist_ok=True)
 
-    # TODO: input and output are a list of dictionaries, so we need to iterate over them
+    # TODO: input and output are a list of dictionaries, so we need to iterate over them (Use jinja template)
     # Create config.pbtxt content
     config_content = f"""name: "{model_name}"
 backend: "{backend}"
@@ -50,11 +100,19 @@ output [
   }}
 ]
 """
+    # Check for ensemble_steps in the config
+    if "ensemble_steps" in config and isinstance(
+        config["ensemble_steps"], list
+    ):
+        ensemble_config = generate_ensemble_config(config["ensemble_steps"])
+        config_content += f"\n{ensemble_config}"
+        config_content.replace(f'backend: "{backend}"', "")
 
     # Write config file
     config_path = Path(base_path) / model_name / "config.pbtxt"
     with open(config_path, "w") as f:
         f.write(config_content)
+
 
 @click.group()
 def pbtxt_generator():
@@ -171,6 +229,7 @@ def download_model(model_name: str, base_path: str = "model_repository"):
         )
     except Exception as e:
         click.echo(f"Error downloading model: {str(e)}")
+
+
 if __name__ == "__main__":
     pbtxt_generator()
-

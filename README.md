@@ -45,18 +45,20 @@ you can run the project with docker or locally for development.
     pip install -r requirements.txt
 
     # create model repository and the config.pbtxt file
-    python /imageclassifier/model_repository_cli.py  create-repository vit_base_patch16_384 1 pytorch deployment/dev/triton_server/image_classifier/config.json
-    python /imageclassifier/model_repository_cli.py create-repository image_preprocessor 1 python deployment/dev/triton_server/preprocessor/config.json
-
+    python imageclassifier/model_repository_cli.py  create-repository vit_base_patch16_384 1 pytorch deployment/dev/triton_server/image_classifier/config.json
+    python imageclassifier/model_repository_cli.py create-repository image_preprocessor 1 python deployment/dev/triton_server/preprocessor/config.json
+    python imageclassifier/model_repository_cli.py create-repository ensemble_model 1 python deployment/dev/triton_server/ensemble_model/config.json
     #download model 
-    python /imageclassifier/model_repository_cli.py  download-model vit_base_patch16_384
+    python imageclassifier/model_repository_cli.py  download-model vit_base_patch16_384
     cp deployment/dev/triton_server/preprocessor/model.py model_repository/image_preprocessor/1/model.py
 
     #run triton server
-    docker run -it --rm -p8000:8000 -p8001:8001 -p8002:8002 -v $(pwd)/model_repository:/models nvcr.io/nvidia/tritonserver:24.10-pyt-python-py3
+    docker run -it --rm -p8000:8000 -p8001:8001 -p8002:8002 -v $(pwd):/app nvcr.io/nvidia/tritonserver:24.10-pyt-python-py3
    
     #run the model server
-    tritonserver --model-repository=/models
+    cd /app 
+    pip install .
+    tritonserver --model-repository=/app/model_repository
     ```
 2. run the project with docker
     ```bash

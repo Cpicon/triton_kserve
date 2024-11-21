@@ -7,12 +7,58 @@ from click.testing import CliRunner
 
 # Import the functions and CLI
 from imageclassifier import create_model_repository, pbtxt_generator
+from imageclassifier.model_repository_cli import generate_ensemble_config
 
 
 # Define a fixture for the CliRunner
 @pytest.fixture
 def runner():
     return CliRunner()
+
+
+def generate_ensemble_config(
+    ensemble_steps: list[dict[str, any]],
+) -> str:
+    """
+    Generates a config.pbtxt file for an ensemble model.
+
+    Args:
+        ensemble_steps: List of ensemble step dictionaries with model configuration.
+    """
+    config_lines = []
+
+    # Add ensemble scheduling
+    config_lines.append('platform: "ensemble"')
+    config_lines.append("ensemble_scheduling {")
+    config_lines.append("  step [")
+
+    for idx, step in enumerate(ensemble_steps):
+        config_lines.append("    {")
+        config_lines.append(f'      model_name: "{step["model_name"]}"')
+        config_lines.append(f'      model_version: {step["model_version"]}')
+
+        # Add input maps
+        if "input_map" in step:
+            for key, value in step["input_map"].items():
+                config_lines.append("      input_map {")
+                config_lines.append(f'        key: "{key}"')
+                config_lines.append(f'        value: "{value}"')
+                config_lines.append("      }")
+
+        # Add output maps
+        if "output_map" in step:
+            for key, value in step["output_map"].items():
+                config_lines.append("      output_map {")
+                config_lines.append(f'        key: "{key}"')
+                config_lines.append(f'        value: "{value}"')
+                config_lines.append("      }")
+
+        config_lines.append("    }")
+
+    config_lines.append("  ]")
+    config_lines.append("}")
+
+    return "\n".join(config_lines)
 
 
 def test_create_model_repository(tmp_path: Path):

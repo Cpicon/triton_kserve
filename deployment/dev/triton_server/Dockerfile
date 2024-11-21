@@ -12,6 +12,7 @@ WORKDIR /app
 # Copy the config.json file into the container
 COPY deployment/dev/triton_server/image_classifier/config.json /app/image_classifier/config.json
 COPY deployment/dev/triton_server/preprocessor/config.json /app/preprocessor/config.json
+COPY deployment/dev/triton_server/ensemble_model/config.json /app/ensemble_model/config.json
 
 # Install the imageclassifier package
 RUN pip install torch timm click
@@ -21,6 +22,7 @@ COPY imageclassifier/model_repository_cli.py /app/imageclassifier/model_reposito
 # Run the create-repository command
 RUN python /app/imageclassifier/model_repository_cli.py create-repository $MODEL_NAME $VERSION $BACKEND /app/image_classifier/config.json
 RUN python /app/imageclassifier/model_repository_cli.py create-repository image_preprocessor 1 python /app/preprocessor/config.json
+RUN python /app/imageclassifier/model_repository_cli.py create-repository ensemble_model 1 python /app/ensemble_model/config.json
 
 # Check if the directory exists
 RUN test -d /app/model_repository/$MODEL_NAME/$VERSION || (echo "Directory does not exist" && exit 1)

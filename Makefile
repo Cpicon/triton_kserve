@@ -15,7 +15,7 @@ endif
 # Build the docker image
 build:
 	@echo "Building docker images..."
-	docker compose -f deployment/dev/compose.yaml build
+	docker compose -f deployment/dev/compose.yml build
 
 # Run the docker container
 run:
