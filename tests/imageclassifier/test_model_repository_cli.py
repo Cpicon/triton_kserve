@@ -5,7 +5,7 @@ from unittest.mock import Mock
 import pytest
 from click.testing import CliRunner
 
-# Import the functions and CLI group from your clients.py
+# Import the functions and CLI
 from imageclassifier import create_model_repository, pbtxt_generator
 
 
@@ -158,24 +158,24 @@ def test_download_model_command_success(
     # WITH
     model_repository_path.mkdir(parents=True)
 
-    # Mock timm.create_model in the imageclassifier.clients module
+    # Mock timm.create_model in the imageclassifier.model_repository_cli module
     mock_model = Mock()
     monkeypatch.setattr(
-        "imageclassifier.clients.timm.create_model",
+        "imageclassifier.model_repository_cli.timm.create_model",
         Mock(return_value=mock_model),
     )
 
-    # Mock torch.jit.trace in the imageclassifier.clients module
+    # Mock torch.jit.trace in the imageclassifier.model_repository_cli module
     mock_traced_model = Mock()
     monkeypatch.setattr(
-        "imageclassifier.clients.torch.jit.trace",
+        "imageclassifier.model_repository_cli.torch.jit.trace",
         Mock(return_value=mock_traced_model),
     )
 
-    # Mock torch.jit.save in the imageclassifier.clients module
+    # Mock torch.jit.save in the imageclassifier.model_repository_cli module
     mock_torch_save = Mock()
     monkeypatch.setattr(
-        "imageclassifier.clients.torch.jit.save", mock_torch_save
+        "imageclassifier.model_repository_cli.torch.jit.save", mock_torch_save
     )
     result = runner.invoke(
         pbtxt_generator,
