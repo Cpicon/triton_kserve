@@ -17,6 +17,7 @@ deployment/
 └── prod/               # Deployment files for production environments
 
 imageclassifier/
+├── app/                # User interface 
 ├── models/             # Main model and preprocessing scripts
 ├── clients.py          # Client for interacting with Triton Server
 └── __init__.py         # Package initialization
@@ -36,7 +37,19 @@ model_repository/
 ### Running the Project
 you can run the project with docker or locally for development.
 
-1. dependencies for local development
+1. run the project with docker
+    ```bash
+    # download artifacts
+    dvc pull
+    #build docker image
+    make build
+    #run docker container
+    make run
+    # go to the ui http://localhost:8501, pick up an image from data/images folder, enjoy!
+    #stop docker container
+    make stop
+    ```
+2. local development
     ```bash
     #create virtual environment
     python3 -m venv venv
@@ -59,15 +72,6 @@ you can run the project with docker or locally for development.
     cd /app 
     pip install .
     tritonserver --model-repository=/app/model_repository
-    ```
-2. run the project with docker
-    ```bash
-    #build docker image
-    make build
-    #run docker container
-    make run
-    #stop docker container
-    make stop
     ```
 
 ### Running Tests with Pytest
