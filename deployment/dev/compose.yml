@@ -2,7 +2,7 @@ name: triton_server
 services:
   triton_server:
     build:
-      context: ../../  # Go up two levels to reach the root directory
+      context: ../../
       dockerfile: deployment/dev/triton_server/Dockerfile
       args:
         MODEL_NAME: vit_base_patch16_384
@@ -17,3 +17,16 @@ services:
         - "8000:8000"
         - "8001:8001"
         - "8002:8002"
+
+  streamlit_app:
+    build:
+      context: ../../
+      dockerfile: deployment/dev/ui/Dockerfile
+    image: streamlit_app_image
+    container_name: streamlit_app_container
+    environment:
+      - INFERENCE_SERVER=triton_server:8000
+    ports:
+      - "8501:8501"
+    depends_on:
+      - triton_server

@@ -10,7 +10,9 @@ dependencies = [
     "torchvision",
     "timm",
     "tritonclient[http]>=2.51.0",
-    "pillow"
+    "pillow",
+    "watchdog>=6.0.0",
+    "streamlit>=1.40.1"
 ]
 dynamic = ["version"]
 

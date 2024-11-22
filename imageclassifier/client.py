@@ -10,7 +10,7 @@ def run_inference(
     classes: list[str],
     models: dict[str, dict[str, str]],
     server_url: str = "localhost:8000",
-) -> None:
+) -> tuple[str, str]:
     """
     Runs inference on a given image using the specified model on the Triton Inference Server.
 
@@ -23,6 +23,8 @@ def run_inference(
 
     Raises:
         ValueError: If the specified model is not found in the models configuration.
+    return:
+        Tuple[str, str]: Index and class name of the predicted output.
     """
     if model_name not in models:
         raise ValueError(
@@ -49,5 +51,4 @@ def run_inference(
     predicted_index = np.argmax(output[0])
     predicted_class = classes[predicted_index]
 
-    print(f"Predicted class index: {predicted_index}")
-    print(f"Predicted class name: {predicted_class}")
+    return predicted_index, predicted_class
